@@ -5,12 +5,10 @@ import { Connection, PublicKey, clusterApiUrl} from '@solana/web3.js';
 import {
   Program, Provider, web3
 } from '@project-serum/anchor';
-
+import kp from './keypair.json'
 import idl from './idl.json';
 
 const { SystemProgram, Keypair } = web3; // Let the code know what the sys program is
-
-let baseAccount = Keypair.generate(); // allows us to create a keypair for the new baseAccount
 
 const programID = new PublicKey(idl.metadata.address); // finds our programId
 
@@ -35,13 +33,9 @@ const App = () => {
   const [inputValue , setInputValue] = useState('');
   const [gifList , setGifList] = useState([]);
 
-  const getProvider = () => {
-    const connection = new Connection(network, opts.preflightCommitment);
-    const provider = new Provider(
-      connection, window.solana, opts.preflightCommitment,
-      );
-    return provider;
-  }
+  const arr = Object.values(kp._keypair.secretKey)
+  const secret = new Uint8Array(arr)
+  const baseAccount = web3.Keypair.fromSecretKey(secret)
 
   const createGifAccount = async () => {
     try {
@@ -106,6 +100,14 @@ const App = () => {
         setInputValue(value);
       }
 
+      const getProvider = () => {
+        const connection = new Connection(network, opts.preflightCommitment);
+        const provider = new Provider(
+           connection, window.solana, opts.preflightCommitment,
+           );
+         return provider;
+      }
+
       const sendGif = async () => {
         if (inputValue.length === 0) {
           console.log("No gif link provided !")
@@ -123,12 +125,12 @@ const App = () => {
             },
           });
           console.log('Gif successfully sent:', inputValue);
+
           await getGifList();
-        
         } catch(error) {
           console.log("error", error)
         }
-        }
+        };
       const renderNotConnectedContainer = () => (
           <button
               className="cta-button connect-wallet-button"
